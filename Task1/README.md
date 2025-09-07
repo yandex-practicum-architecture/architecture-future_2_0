@@ -6,7 +6,7 @@
 
 ![C4_Container.drawio.png](C4_Container.drawio.png)  
 
-[Открыть / скачать диаграмму (Drawio)](C4_Context.drawio)  
+[Открыть / скачать диаграмму (Drawio)](C4_Container.drawio)  
 
 **Описание компонентов:**
 
