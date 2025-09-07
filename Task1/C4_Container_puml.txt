@@ -1,0 +1,60 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+' uncomment the following line and comment the first to use locally
+' !include C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Container Diagram for Future 2.0 - Target Architecture (1 Year)
+
+Person(business_user, "Business User / Бизнес-пользователь", "Использует платформу данных для отчетности и аналитики")
+Person(data_scientist, "Data Scientist / Дата-сайентист", "Разрабатывает и обучает модели ИИ/МО")
+
+System_Boundary(data_platform, "Платформа Данных") {
+    Container(web_app, "Self-Service Data Portal / Портал Самообслуживания Данных", "React/Node.js", "Предоставляет интерфейс самообслуживания для обнаружения, исследования данных и создания отчетов.")
+    Container(api_gateway, "API Gateway / API Шлюз", "Kong/Nginx", "Обрабатывает API запросы и направляет их в соответствующие микросервисы.")
+    Container(data_lake, "Data Lake / Озеро Данных", "AWS S3/Azure Blob Storage/GCS", "Хранит необработанные данные в исходном формате.")
+    Container(data_warehouse, "Data Warehouse / Хранилище Данных", "Snowflake/BigQuery/Redshift", "Хранит структурированные данные для отчетности и аналитики.")
+    Container(data_catalog, "Data Catalog / Каталог Данных", "Apache Atlas/AWS Glue", "Обеспечивает управление метаданными, обнаружение данных и управление качеством данных.")
+    Container(data_ingestion, "Data Ingestion Service / Сервис Загрузки Данных", "Apache Kafka/AWS Kinesis", "Загружает данные из различных источников в Озеро Данных.")
+    Container(data_processing, "Data Processing Service / Сервис Обработки Данных", "Apache Spark/AWS EMR", "Обрабатывает и преобразует данные в Озере Данных и Хранилище Данных.")
+    Container(reporting_service, "Reporting Service / Сервис Отчетности", "Metabase/Tableau", "Генерирует отчеты и панели мониторинга на основе данных из Хранилища Данных.")
+    Container(ml_service, "Machine Learning Service / Сервис Машинного Обучения", "Kubeflow/Sagemaker", "Развертывает и управляет моделями машинного обучения.")
+
+    ContainerDb(metadata_store, "Metadata Store / Хранилище Метаданных", "PostgreSQL/MySQL", "Хранит метаданные об активах данных в Озере Данных и Хранилище Данных.")
+    ContainerDb(feature_store, "Feature Store / Хранилище Признаков", "Redis/Cassandra", "Хранит предварительно вычисленные признаки для моделей машинного обучения.")
+}
+System_Ext(clinical_system, "Clinical System (Legacy) / Клиническая Система (Устаревшая)", "Внутренняя Система", "Хранит медицинские записи пациентов, историю и исследовательские данные.")
+System_Ext(fintech_services, "Fintech Services / Финтех Сервисы", "Golang/Java", "Предоставляет финансовые услуги клиентам.")
+System_Ext(ai_services, "AI Services / Сервисы ИИ", "Python", "Предоставляет сервисы ИИ/МО для анализа медицинских данных.")
+
+Rel(business_user, web_app, "Использует", "HTTPS")
+Rel(data_scientist, web_app, "Использует", "HTTPS")
+
+Rel(web_app, api_gateway, "Использует", "HTTPS/REST")
+Rel(api_gateway, data_lake, "Читает/Записывает", "S3/Blob Storage API")
+Rel(api_gateway, data_warehouse, "Запрашивает", "JDBC/ODBC")
+Rel(api_gateway, data_catalog, "Запрашивает", "REST API")
+Rel(api_gateway, reporting_service, "Запрашивает Отчеты", "REST API")
+Rel(api_gateway, ml_service, "Запрашивает Прогнозы", "REST API")
+
+Rel(data_ingestion, data_lake, "Записывает", "S3/Blob Storage API")
+Rel(data_processing, data_lake, "Читает/Записывает", "S3/Blob Storage API")
+Rel(data_processing, data_warehouse, "Записывает", "JDBC/ODBC")
+Rel(data_processing, metadata_store, "Обновляет", "JDBC")
+Rel(data_scientist, ml_service, "Обучает Модели", "API")
+Rel(ml_service, feature_store, "Читает Признаки", "API")
+Rel(ml_service, data_warehouse, "Читает Данные для Обучения", "JDBC/ODBC")
+
+Rel(clinical_system, data_ingestion, "Отправляет Данные", "Kafka/Kinesis")
+Rel(fintech_services, data_ingestion, "Отправляет Данные", "Kafka/Kinesis")
+Rel(ai_services, data_ingestion, "Отправляет Данные", "Kafka/Kinesis")
+
+Rel(data_lake, data_processing, "Читает Данные", "S3/Blob Storage API")
+Rel(data_warehouse, reporting_service, "Читает Данные", "JDBC/ODBC")
+Rel(data_warehouse, ml_service, "Читает Данные для Обучения", "JDBC/ODBC")
+
+Rel(data_catalog, data_lake, "Сканирует и Индексирует", "API")
+Rel(data_catalog, data_warehouse, "Сканирует и Индексирует", "API")
+
+@enduml
