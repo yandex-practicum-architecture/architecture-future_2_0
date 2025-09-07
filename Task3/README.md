@@ -22,9 +22,15 @@
 
 Для построения Технического Радара применялся соответствующий инструментарий: см. https://radar.thoughtworks.com/  
 
-Для построения необходимо загрузить файл в формате csv [Технический Радар в csv-формате](tech-radar.thoughtworks.csv), описывающий Технический Радар, передав соотвутствующую ссылку на файл репозитория github и нажав кнопку Build my radar.  
+Для построения необходимо загрузить файл в формате csv [Технический Радар в csv-формате](tech-radar.thoughtworks.csv), описывающий Технический Радар, передав соотвутствующую ссылку на файл репозитория github:
+
+https://raw.githubusercontent.com/yandex-practicum-architecture/architecture-future_2_0/refs/heads/AS11_T1_2_3/Task3/tech-radar.thoughtworks.csv
+
+и нажав кнопку **Build my radar**.  
 
 Соответствующий Технический Радар будет сформирован и доступен к просмотру.  
+
+[Технический Радар "Будущее 2.0", для просмотра перейти по ссылке](https://radar.thoughtworks.com/?documentId=https%3A%2F%2Fraw.githubusercontent.com%2Fyandex-practicum-architecture%2Farchitecture-future_2_0%2Frefs%2Fheads%2FAS11_T1_2_3%2FTask3%2Ftech-radar.thoughtworks.csv)
 
 Отдельные представления Технического Радара далее:  
 
