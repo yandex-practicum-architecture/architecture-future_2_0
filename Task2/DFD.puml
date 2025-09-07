@@ -1,0 +1,73 @@
+@startuml
+title DFD "Будущее 2.0"
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam defaultFontName Arial
+
+' Операционные домены (источники данных)
+package "Операционные Домены (Источники данных)" #F5F5F5 {
+  database legacy_dwh as "Устаревшее DWH\nMS SQL Server 2008" #E0F7FA
+  rectangle clinical_ops as "Клинический Домен\n(EMR, LIS, PACS)" #FFF3E0
+  rectangle fintech_services as "Финансовый Домен\n(банковские,\nкредитные системы)" #E8F5E9
+  rectangle pharma_ops as "Фармацевтический Домен\n(ERP, CRM, производство)" #F3E5F5
+  rectangle med_electronics_ops as "Домен Мед. Электроники\n(ERP, CRM, PLM)" #E3F2FD
+  rectangle hr_inventory as "Домен Управления Ресурсами\n(HRM, WMS)" #FFFDE7
+}
+
+' Платформенные домены (инфраструктура данных)
+package "Платформенные Домены (Инфраструктура)" #F9FBE7 {
+  component event_streaming as "Платформа потоковой передачи\n(Apache Kafka)" #FFCC80
+  database data_lake as "Озеро данных\n(AWS S3 / Azure Blob)" #BBDEFB
+  component data_processing as "Платформа обработки\n(Apache Spark / Flink)" #D1C4E9
+  database modern_dwh as "Современное DWH\n(Snowflake / BigQuery)" #B2DFDB
+  database data_marts as "Витрины данных\n(PostgreSQL / ClickHouse)" #C8E6C9
+  component metadata_governance as "Метаданные и управление\n(Atlas / Glue)" #FFE082
+  database feature_store as "Feature Store\n(Redis / Cassandra)" #F8BBD0
+}
+
+' Потребительские домены и роли
+package "Потребительские Домены" #F3E5F5 {
+  rectangle ai_services as "Домен ИИ/МО\n(Python-приложения)" #FFECB3
+  rectangle self_service_portal as "Портал Самообслуживания\n(Web)" #E1F5FE
+  rectangle power_bi as "BI-система\n(Power BI)" #FFF9C4
+}
+
+actor business_user as "Бизнес-пользователь\n(Аналитик, руководитель)" #FFF176
+actor data_scientist as "Дата-сайентист" #FFF176
+
+' Потоки данных из Операционных Домeнов -> Платформа потоковой передачи
+legacy_dwh --> event_streaming : CDC / Kafka Connect
+clinical_ops --> event_streaming : Данные (кроме PHI)\nKafka Producers
+fintech_services --> event_streaming : Транзакции, счета\nKafka Producers
+pharma_ops --> event_streaming : Продукты, продажи\nKafka Producers
+med_electronics_ops --> event_streaming : Производство, оборудование\nKafka Producers
+hr_inventory --> event_streaming : Персонал, инвентарь\nKafka Producers
+
+' PHI через защищённый канал (только для ИИ)
+clinical_ops --> ai_services : PHI (чувствительные данные)\nЗащищённый API
+
+' Потоки внутри платформы
+event_streaming --> data_lake : Сырые события / логи
+data_lake --> data_processing : Сырые данные (Parquet/Delta)
+data_processing --> modern_dwh : Очищенные / Трансформированные данные
+data_processing --> data_lake : Обработанные наборы (back to lake)
+modern_dwh --> data_marts : Агрегации / витрины
+data_lake --> feature_store : Данные для признаков
+modern_dwh --> feature_store : Таблицы для признаков
+metadata_governance --> data_lake : Метаданные / схемы
+metadata_governance --> data_processing : Качество / lineage
+metadata_governance --> modern_dwh : Политики доступа / схемы
+
+' Потоки к потребителям
+data_marts --> self_service_portal : Данные (API)
+data_marts --> power_bi : Данные (ODBC/JDBC)
+feature_store --> ai_services : Признаки (API)
+modern_dwh --> ai_services : Данные для обучения (JDBC)
+ai_services --> data_marts : Анонимизированные результаты (API)
+
+' Взаимодействие людей с порталами
+self_service_portal --> business_user : Отчёты, дашборды (HTTPS)
+power_bi --> business_user : Отчёты (HTTPS)
+data_scientist --> self_service_portal : Анализ данных (HTTPS)
+
+@enduml
